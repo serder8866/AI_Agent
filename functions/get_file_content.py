@@ -15,7 +15,7 @@ def get_file_content(working_directory, file_path):
             file_content_string = f.read(MAX_CHAR)
             leftover = f.read(1)
             if leftover:
-                return file_content_string + f"...File '{file_path}' truncated at 10000 characters"
+                return file_content_string + f"...File '{file_path}' truncated at {MAX_CHAR} characters"
             return file_content_string
     except Exception as e:
-        return f"Error: {e}"
+        return f"Error reading file: {e}"
