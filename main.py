@@ -8,6 +8,7 @@ from google.genai import types
 
 from prompts import system_prompt
 from call_function import available_functions, call_function
+from config import MAX_ITERS
 
 
 def main():
@@ -27,13 +28,17 @@ def main():
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
     
-    for _ in range(20):
-        code = generate_content(client, messages, args.verbose)
-        if code == 0:
-            break
-    if code != 0:
-        print("The agent needs more then 20 function calls for this task.")
-        sys.exit(1)
+    for _ in range(MAX_ITERS):
+        try:
+            final_response = generate_content(client, messages, args.verbose)
+            if final_response:
+                print("Final Response:")
+                print(final_response)
+                return
+        except Exception as e:
+            print(f"Error in generate_content: {e}")
+    print(f"Maximum iterations ({MAX_ITERS}) reached")
+    sys.exit(1)
     
 
 def generate_content(client, messages, verbose):
@@ -57,9 +62,7 @@ def generate_content(client, messages, verbose):
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
     
     if not response.function_calls:
-        print("Response:")
-        print(response.text)
-        return 0
+        return response.text
     
     function_results = []
     for function_call in response.function_calls:
